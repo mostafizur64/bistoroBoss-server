@@ -40,7 +40,7 @@ async function run() {
       res.send({ token });
     });
 
-    // verifyToken ================
+    // verifyToken middleware ================
 
     const verifyToken = (req, res, next) => {
       const authorization = req.headers.authorization;
@@ -62,8 +62,8 @@ async function run() {
       });
     };
 
-    // warning:use verifyJWT before using verifyAdmin 
-    const verifyAdmin = async (req,res,next) => {
+    // warning:use verifyJWT before using verifyAdmin
+    const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
       const user = await usersCollection.findOne(query);
@@ -82,7 +82,7 @@ async function run() {
      *
      */
     // user related api
-    app.get("/users", verifyToken,verifyAdmin, async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
@@ -131,6 +131,19 @@ async function run() {
     // menu related api
     app.get("/menu", async (req, res) => {
       const result = await menuCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/menu", verifyToken, verifyAdmin, async (req, res) => {
+      const newItem = req.body;
+      const result = await menuCollection.insertOne(newItem);
+      res.send(result);
+    });
+
+    app.delete("/menu/:id",verifyToken,verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await menuCollection.deleteOne(query);
       res.send(result);
     });
 
